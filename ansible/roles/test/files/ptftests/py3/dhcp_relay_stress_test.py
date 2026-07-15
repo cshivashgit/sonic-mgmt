@@ -51,15 +51,18 @@ class DHCPStressTest(DHCPTest):
         DHCPTest.setUp(self)
         self.packets_send_duration = self.test_params["packets_send_duration"]
         self.client_packets_per_sec = self.test_params["client_packets_per_sec"]
+        self.count_file = self.test_params.get("count_file")
 
     def client_send_packet_stress(self):
+        if not self.count_file:
+            self.count_file = "/tmp/dhcp_stress_test_{}".format(self.packet_type)
         # Start tcpdump on each receive-port interface individually to avoid
         # issues with '-i any' cooked capture (SLL/SLLv2), deep BPF offsets
         # (udp[249:2]), and grep-based interface filtering.
         log_files = []
         tcpdump_procs = []
         for idx in self.receive_port_indices:
-            log_file = "/tmp/dhcp_stress_{}_{}.log".format(self.packet_type, idx)
+            log_file = "{}_eth{}.log".format(self.count_file, idx)
             log_files.append(log_file)
             # Match only the DHCP message-type under test so background/other-type
             # DHCP traffic cannot inflate the relayed-packet count. message-type
@@ -140,7 +143,7 @@ class DHCPStressTest(DHCPTest):
                 # File already removed or never created; nothing to clean up
                 pass
 
-        with open("/tmp/dhcp_stress_test_{}".format(self.packet_type), "w") as count_fh:
+        with open(self.count_file, "w") as count_fh:
             count_fh.write("{}\n".format(total_count))
 
     def runTest(self):

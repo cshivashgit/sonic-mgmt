@@ -1,6 +1,7 @@
 import pytest
 import time
 import logging
+import uuid
 import ptf.packet as scapy
 
 from tests.common.fixtures.ptfhost_utils import copy_ptftests_directory   # noqa F401
@@ -180,7 +181,8 @@ def test_dhcp_relay_stress(ptfhost, ptfadapter, dut_dhcp_relay_data, validate_du
             "relay_agent": relay_agent,
             "downlink_vlan_iface_name": str(dhcp_relay["downlink_vlan_iface"]["name"])
         }
-        count_file = '/tmp/dhcp_stress_test_{}'.format(dhcp_type)
+        count_file = '/tmp/dhcp_stress_test_{}_{}'.format(dhcp_type, uuid.uuid4().hex)
+        params["count_file"] = count_file
 
         def _check_count_file_exists():
             command = 'ls {} > /dev/null 2>&1 && echo exists || echo missing'.format(count_file)
